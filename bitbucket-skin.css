@@ -1,0 +1,404 @@
+/*
+ * Pretty GitHub — Bitbucket Skin
+ * Restyles GitHub's UI to resemble Atlassian Bitbucket.
+ * Palette based on Atlassian Design System (ADG) neutrals + blue accent.
+ */
+
+/* ---------- LIGHT palette (default) ----------
+ * Atlassian ADG light theme. */
+:root {
+  --bb-blue: #0052cc;
+  --bb-blue-hover: #0065ff;
+  --bb-blue-dark: #0747a6;
+  --bb-navy: #172b4d;      /* primary text */
+  --bb-subtle: #5e6c84;    /* secondary text */
+  --bb-border: #dfe1e6;    /* neutral border */
+  --bb-bg: #ffffff;        /* surface */
+  --bb-bg-subtle: #f4f5f7; /* app background */
+  --bb-bg-hover: #ebecf0;
+
+  /* Diff colors — Bitbucket light */
+  --bb-add-bg: #e3fcef;
+  --bb-add-gutter: #abf5d1;
+  --bb-add-word: #abf5d1;
+  --bb-del-bg: #ffebe6;
+  --bb-del-gutter: #ffbdad;
+  --bb-del-word: #ffbdad;
+
+  --bb-radius: 3px;
+  --bb-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+  --bb-mono: "SFMono-Medium", "SF Mono", "Segoe UI Mono", "Roboto Mono", Menlo, Consolas, monospace;
+}
+
+/* ---------- DARK palette ----------
+ * Applied when GitHub is in dark mode. GitHub marks this with
+ * [data-color-mode="dark"] OR data-color-mode="auto" + [data-dark-theme],
+ * and also honors the OS preference. We cover all three signals so the
+ * Bitbucket colors track whatever theme the page is actually rendering.
+ *
+ * NOTE: the diff add/del colors deliberately stay LIGHT in
+ * both themes — Bitbucket keeps its diff/code panels light even in its dark
+ * UI, so only the surrounding chrome goes dark. */
+html[data-color-mode="dark"],
+html[data-color-mode="auto"][data-dark-theme] {
+  --bb-blue: #4c9aff;        /* Atlassian dark-mode blue link */
+  --bb-blue-hover: #85b8ff;
+  --bb-blue-dark: #0052cc;
+  --bb-navy: #c7d1db;        /* primary text on dark chrome */
+  --bb-subtle: #8993a4;      /* secondary text */
+  --bb-border: #2c333a;      /* neutral dark border */
+  --bb-bg: #1d2125;          /* surface */
+  --bb-bg-subtle: #161a1d;   /* app background (darker) */
+  --bb-bg-hover: #22272b;
+}
+
+/* Fallback: OS-level dark preference when GitHub is left on "auto"
+   without an explicit data-dark-theme attribute. */
+@media (prefers-color-scheme: dark) {
+  html[data-color-mode="auto"] {
+    --bb-blue: #4c9aff;
+    --bb-blue-hover: #85b8ff;
+    --bb-blue-dark: #0052cc;
+    --bb-navy: #c7d1db;
+    --bb-subtle: #8993a4;
+    --bb-border: #2c333a;
+    --bb-bg: #1d2125;
+    --bb-bg-subtle: #161a1d;
+    --bb-bg-hover: #22272b;
+  }
+}
+
+/* ---------- Global surfaces & typography ---------- */
+html.pretty-github-bb body {
+  font-family: var(--bb-font) !important;
+  color: var(--bb-navy) !important;
+  background-color: var(--bb-bg-subtle) !important;
+}
+
+/* GitHub uses a lot of CSS variables — override the core ones so
+   downstream components inherit Bitbucket colors automatically.
+   Gated on .pretty-github-bb so the popup toggle can disable everything. */
+html.pretty-github-bb,
+html.pretty-github-bb [data-color-mode] {
+  --color-canvas-default: var(--bb-bg) !important;
+  --color-canvas-subtle: var(--bb-bg-subtle) !important;
+  --color-canvas-inset: var(--bb-bg-subtle) !important;
+  --color-border-default: var(--bb-border) !important;
+  --color-border-muted: var(--bb-border) !important;
+  --color-fg-default: var(--bb-navy) !important;
+  --color-fg-muted: var(--bb-subtle) !important;
+  --color-fg-subtle: var(--bb-subtle) !important;
+  --color-accent-fg: var(--bb-blue) !important;
+  --color-accent-emphasis: var(--bb-blue) !important;
+  --color-neutral-muted: var(--bb-bg-hover) !important;
+
+  /* Diff variables */
+  --color-diff-blob-addition-line-bg: var(--bb-add-bg) !important;
+  --color-diff-blob-addition-num-bg: var(--bb-add-gutter) !important;
+  --color-diff-blob-addition-word-bg: var(--bb-add-word) !important;
+  --color-diff-blob-deletion-line-bg: var(--bb-del-bg) !important;
+  --color-diff-blob-deletion-num-bg: var(--bb-del-gutter) !important;
+  --color-diff-blob-deletion-word-bg: var(--bb-del-word) !important;
+}
+
+/* =====================================================================
+ * LIGHT DIFFS ON DARK MODE — modern React diff view
+ * ---------------------------------------------------------------------
+ * Bitbucket keeps its diff/code panel LIGHT even in a dark UI. GitHub's
+ * newest diff (the [data-testid="diff-content"] region) paints add/del row
+ * backgrounds via INLINE styles that reference registered custom properties;
+ * external CSS (even !important) can't reliably override those, so the row /
+ * gutter background recoloring is done in skin.js (which sets the color inline
+ * on each cell and always wins).
+ *
+ * CSS's job here is the rest: force a white panel surface and swap the syntax-
+ * highlight palette to Bitbucket's light-theme colors so code is readable on
+ * white. These DO apply via a normal author stylesheet. Dark mode only. ===== */
+html:is([data-color-mode="dark"], [data-color-mode="auto"][data-dark-theme]).pretty-github-bb
+  [data-testid="diff-content"] {
+  background-color: #ffffff !important;
+  --color-fg-default: #172b4d !important;
+  /* Bitbucket's syntax palette (sampled from a real Bitbucket diff) */
+  --color-prettylights-syntax-comment: #5e6c84 !important;
+  --color-prettylights-syntax-constant: #336ea9 !important;
+  --color-prettylights-syntax-entity: #6554c0 !important;
+  --color-prettylights-syntax-keyword: #815b3a !important;
+  --color-prettylights-syntax-string: #c03e32 !important;
+  --color-prettylights-syntax-variable: #4a6785 !important;
+  --color-prettylights-syntax-storage-modifier-import: #172b4d !important;
+  --color-prettylights-syntax-entity-tag: #336ea9 !important;
+}
+
+/* Near-white identifier / punctuation tokens -> dark navy (readable on white). */
+html:is([data-color-mode="dark"], [data-color-mode="auto"][data-dark-theme]).pretty-github-bb
+  [data-testid="diff-content"] .diff-text-cell :is(.pl-s1, .pl-kos, .pl-smi, .pl-pds, .pl-ent) {
+  color: #172b4d !important;
+}
+
+/* The code-text container itself carries a near-white base color for any text
+   NOT wrapped in a token span (plain identifiers, string bodies, shell text).
+   Force it dark so nothing renders white-on-white; keep GitHub's muted variant
+   as a readable gray. This is the fix for "white text in between". */
+html:is([data-color-mode="dark"], [data-color-mode="auto"][data-dark-theme]).pretty-github-bb
+  [data-testid="diff-content"] .diff-text-inner {
+  color: #172b4d !important;
+}
+html:is([data-color-mode="dark"], [data-color-mode="auto"][data-dark-theme]).pretty-github-bb
+  [data-testid="diff-content"] .diff-text-inner.color-fg-muted {
+  color: #5e6c84 !important;
+}
+
+/* Word-level intra-line highlight (span.x) is a rounded pill by default.
+   Bitbucket uses a flush rectangle, so square the corners. Theme-independent.
+   (Its background is repainted in skin.js; here we square it and, in dark mode,
+   force its text dark so a light-colored token stays readable on the tint.) */
+html.pretty-github-bb [data-testid="diff-content"] .diff-text-cell .x {
+  border-radius: 0 !important;
+}
+html:is([data-color-mode="dark"], [data-color-mode="auto"][data-dark-theme]).pretty-github-bb
+  [data-testid="diff-content"] .diff-text-cell .x {
+  color: #172b4d !important;
+}
+
+/* Expand-hunk buttons (the up/down arrows in the gutter between hunks) default
+   to a dark navy pill. Restyle to match Bitbucket's light hunk band with a
+   muted-gray arrow. Stable module-class prefix; plain class rule works here. */
+html.pretty-github-bb
+  [data-testid="diff-content"] [class*="ExpandableHunkHeaderDiffLine-module__expand-button"] {
+  background-color: #eef4ff !important;
+  color: #5e6c84 !important;
+  border-color: #dfe1e6 !important;
+}
+html.pretty-github-bb
+  [data-testid="diff-content"] [class*="ExpandableHunkHeaderDiffLine-module__expand-button"] svg {
+  color: #5e6c84 !important;
+  fill: currentColor !important;
+}
+
+/* The hunk kebab/menu block in the hunk-header gutter defaults to a navy fill
+   (the "blue block on the left"). Make it match the light hunk band. */
+html.pretty-github-bb [data-testid="diff-content"] .hunk-kebab-icon {
+  background-color: #eef4ff !important;
+  color: #5e6c84 !important;
+}
+html.pretty-github-bb [data-testid="diff-content"] .hunk-kebab-icon svg {
+  color: #5e6c84 !important;
+  fill: currentColor !important;
+}
+
+/* ---- Per-file diff header bar (the dark strip with the filename + actions).
+        Bitbucket uses a light-gray header with a blue path link. This sits
+        above the light diff, so keep it light in ALL themes. Class names are
+        hashed CSS-module names, matched by their stable prefix. ---- */
+html.pretty-github-bb [class*="diffHeaderWrapper"],
+html.pretty-github-bb [class*="diff-file-header"] {
+  background-color: #f4f5f7 !important;
+  color: #172b4d !important;
+  border-bottom: 1px solid #dfe1e6 !important;
+}
+/* Filename in the header: Bitbucket shows it as a muted-gray breadcrumb path
+   (last segment bold), NOT a blue link. */
+html.pretty-github-bb [class*="diffHeaderWrapper"] a,
+html.pretty-github-bb [class*="diff-file-header"] a {
+  color: #5e6c84 !important;
+  font-weight: 600 !important;
+  text-decoration: none !important;
+}
+html.pretty-github-bb [class*="diffHeaderWrapper"] svg,
+html.pretty-github-bb [class*="diff-file-header"] svg {
+  color: #5e6c84 !important;
+  fill: currentColor !important;
+}
+
+
+/* ---- Classic (pre-React) diff view fallback, for repos not yet migrated.
+        The classic view uses solid class-based backgrounds that DO respond
+        to CSS, so these are safe to keep as plain rules. ---- */
+html:is([data-color-mode="dark"], [data-color-mode="auto"][data-dark-theme]).pretty-github-bb
+  :is(.diff-table, .highlight, .blob-wrapper, .blob-code-inner, .file .highlight) {
+  background-color: #ffffff !important;
+  color: #172b4d !important;
+  --color-canvas-default: #ffffff !important;
+  --color-canvas-subtle: #f4f5f7 !important;
+  --color-fg-default: #172b4d !important;
+  --color-fg-muted: #5e6c84 !important;
+  --color-prettylights-syntax-comment: #5e6c84 !important;
+  --color-prettylights-syntax-constant: #336ea9 !important;
+  --color-prettylights-syntax-entity: #6554c0 !important;
+  --color-prettylights-syntax-keyword: #815b3a !important;
+  --color-prettylights-syntax-string: #c03e32 !important;
+  --color-prettylights-syntax-variable: #4a6785 !important;
+}
+html:is([data-color-mode="dark"], [data-color-mode="auto"][data-dark-theme]).pretty-github-bb
+  .blob-code-addition { background-color: #e3fcef !important; }
+html:is([data-color-mode="dark"], [data-color-mode="auto"][data-dark-theme]).pretty-github-bb
+  .blob-code-deletion { background-color: #ffebe6 !important; }
+html:is([data-color-mode="dark"], [data-color-mode="auto"][data-dark-theme]).pretty-github-bb
+  .blob-num-addition { background-color: #abf5d1 !important; }
+html:is([data-color-mode="dark"], [data-color-mode="auto"][data-dark-theme]).pretty-github-bb
+  .blob-num-deletion { background-color: #ffbdad !important; }
+html:is([data-color-mode="dark"], [data-color-mode="auto"][data-dark-theme]).pretty-github-bb
+  .blob-num { background-color: #f4f5f7 !important; color: #8993a4 !important; }
+
+/* ---------- Top navigation bar ---------- */
+html.pretty-github-bb .AppHeader,
+html.pretty-github-bb .Header,
+html.pretty-github-bb header.js-header-wrapper > div {
+  background-color: var(--bb-navy) !important;
+  border-bottom: 1px solid var(--bb-blue-dark) !important;
+}
+
+/* ---------- Links ---------- */
+html.pretty-github-bb a,
+html.pretty-github-bb .Link--primary,
+html.pretty-github-bb .markdown-body a {
+  color: var(--bb-blue) !important;
+}
+html.pretty-github-bb a:hover {
+  color: var(--bb-blue-hover) !important;
+  text-decoration: underline !important;
+}
+
+/* Exception: the global top navigation (GitHub's <header>/AppHeader) sits on a
+   dark bar, where its links are plain light text with no underline — the blanket
+   rule above was turning them blue + underlined. Make header links inherit their
+   parent's (correctly-themed) color and drop the underline. Using `inherit`
+   (not `revert`) so they match GitHub's actual nav text in both light and dark. */
+html.pretty-github-bb
+  :is(.AppHeader, header, [class*="appHeader"], [class*="AppHeader"]) a,
+html.pretty-github-bb
+  :is(.AppHeader, header, [class*="appHeader"], [class*="AppHeader"]) a:hover {
+  color: inherit !important;
+  text-decoration: none !important;
+}
+
+/* Same exception for the left file-tree in the diff view: its filenames are
+   structural navigation, meant to be plain light text — the blanket rule was
+   turning them all blue. Inherit the tree's own (themed) color, no underline. */
+html.pretty-github-bb [class*="PullRequestFileTree-module"] a,
+html.pretty-github-bb [class*="PullRequestFileTree-module"] a:hover {
+  color: inherit !important;
+  text-decoration: none !important;
+}
+
+/* ---------- Buttons ---------- */
+html.pretty-github-bb .btn-primary,
+html.pretty-github-bb .Button--primary {
+  background-color: var(--bb-blue) !important;
+  border-color: var(--bb-blue) !important;
+  color: #fff !important;
+  border-radius: var(--bb-radius) !important;
+  box-shadow: none !important;
+}
+html.pretty-github-bb .btn-primary:hover,
+html.pretty-github-bb .Button--primary:hover {
+  background-color: var(--bb-blue-dark) !important;
+}
+html.pretty-github-bb .btn,
+html.pretty-github-bb .Button {
+  border-radius: var(--bb-radius) !important;
+  border-color: var(--bb-border) !important;
+}
+
+/* ---------- Boxes / cards ---------- */
+html.pretty-github-bb .Box,
+html.pretty-github-bb .Layout-sidebar .BorderGrid,
+html.pretty-github-bb .color-shadow-small,
+html.pretty-github-bb .color-shadow-medium {
+  border-color: var(--bb-border) !important;
+  border-radius: var(--bb-radius) !important;
+  box-shadow: none !important;
+}
+
+/* ---------- Code & diff view ---------- */
+html.pretty-github-bb .blob-code,
+html.pretty-github-bb .blob-num,
+html.pretty-github-bb table.diff-table,
+html.pretty-github-bb .react-code-text {
+  font-family: var(--bb-mono) !important;
+  font-size: 12.5px !important;
+}
+
+/* Addition lines */
+html.pretty-github-bb .blob-code-addition,
+html.pretty-github-bb .blob-code-addition .blob-code-inner {
+  background-color: var(--bb-add-bg) !important;
+}
+html.pretty-github-bb .blob-num-addition {
+  background-color: var(--bb-add-gutter) !important;
+  border-color: var(--bb-add-gutter) !important;
+}
+
+/* Deletion lines */
+html.pretty-github-bb .blob-code-deletion,
+html.pretty-github-bb .blob-code-deletion .blob-code-inner {
+  background-color: var(--bb-del-bg) !important;
+}
+html.pretty-github-bb .blob-num-deletion {
+  background-color: var(--bb-del-gutter) !important;
+  border-color: var(--bb-del-gutter) !important;
+}
+
+/* Word-level highlights inside a diff line */
+html.pretty-github-bb .blob-code-addition .x,
+html.pretty-github-bb .blob-code-inner .x-addition {
+  background-color: var(--bb-add-word) !important;
+}
+html.pretty-github-bb .blob-code-deletion .x,
+html.pretty-github-bb .blob-code-inner .x-deletion {
+  background-color: var(--bb-del-word) !important;
+}
+
+/* Diff file header — Bitbucket has a light-gray sticky header bar */
+html.pretty-github-bb .file-header,
+html.pretty-github-bb .file-info,
+html.pretty-github-bb .js-file-header {
+  background-color: var(--bb-bg-subtle) !important;
+  border-color: var(--bb-border) !important;
+}
+
+/* Line number gutter tint */
+html.pretty-github-bb .blob-num {
+  color: var(--bb-subtle) !important;
+  background-color: var(--bb-bg-subtle) !important;
+}
+
+/* ---------- Tabs (Code / Issues / PRs …) ---------- */
+html.pretty-github-bb .UnderlineNav,
+html.pretty-github-bb .tabnav {
+  border-bottom-color: var(--bb-border) !important;
+}
+html.pretty-github-bb .UnderlineNav-item.selected,
+html.pretty-github-bb .UnderlineNav-item[aria-current="page"],
+html.pretty-github-bb .tabnav-tab.selected {
+  border-bottom-color: var(--bb-blue) !important;
+  color: var(--bb-navy) !important;
+  font-weight: 600 !important;
+}
+
+/* ---------- Labels / state badges ---------- */
+html.pretty-github-bb .State--open,
+html.pretty-github-bb .State--merged,
+html.pretty-github-bb .State--closed {
+  border-radius: var(--bb-radius) !important;
+}
+
+/* ---------- File listing rows ---------- */
+html.pretty-github-bb .Details .js-navigation-item:hover,
+html.pretty-github-bb .react-directory-row:hover {
+  background-color: var(--bb-bg-hover) !important;
+}
+
+/* ---------- Inputs ---------- */
+html.pretty-github-bb .form-control,
+html.pretty-github-bb input[type="text"],
+html.pretty-github-bb input[type="search"],
+html.pretty-github-bb textarea {
+  border-radius: var(--bb-radius) !important;
+  border-color: var(--bb-border) !important;
+}
+html.pretty-github-bb .form-control:focus,
+html.pretty-github-bb input:focus {
+  border-color: var(--bb-blue) !important;
+  box-shadow: 0 0 0 2px rgba(38, 132, 255, 0.25) !important;
+}

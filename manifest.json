@@ -1,0 +1,24 @@
+{
+  "manifest_version": 3,
+  "name": "Pretty GitHub — Bitbucket Skin",
+  "version": "1.0.0",
+  "description": "Restyles GitHub to look like Bitbucket: colors, diffs, and file views. Pure CSS/UI overwrite, no auth, no data collection.",
+  "permissions": ["storage"],
+  "content_scripts": [
+    {
+      "matches": ["https://github.com/*"],
+      "css": ["bitbucket-skin.css"],
+      "js": ["skin.js"],
+      "run_at": "document_start"
+    }
+  ],
+  "action": {
+    "default_title": "Pretty GitHub",
+    "default_popup": "popup.html"
+  },
+  "icons": {
+    "16": "icons/icon16.png",
+    "48": "icons/icon48.png",
+    "128": "icons/icon128.png"
+  }
+}
